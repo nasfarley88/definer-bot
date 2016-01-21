@@ -1,0 +1,1 @@
+TG_KEY = "140504082:AAFhSkLHzuyLlBieN07xwWUYsmxDHvksQEQ"
