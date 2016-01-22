@@ -2,6 +2,9 @@ import asyncio
 import logging
 import telepot
 import tempfile
+import re
+
+import dataset
 
 from . import image_process
 
@@ -14,8 +17,12 @@ class DefinerBot(telepot.helper.ChatHandler):
         # yield from self.sender.sendMessage(msg['text'])
         if msg['text'] == "/randomimage":
             yield from self.send_random_image(msg)
-        elif msg['text'] == "/define":
-            yield from self.create_image(msg)
+        elif re.findall(r'(?i)(/define)(@[a-z_]+bot)?', msg['text']):
+            no_to_create_match = re.findall(r'(\d+)', msg['text'])
+            if no_to_create_match:
+                yield from self.create_image(msg, no_to_create=int(no_to_create_match[0]))
+            else:
+                yield from self.create_image(msg)
 
     @asyncio.coroutine
     def send_random_image(self, msg, word="word", definition="definition", emotion="sad"):
@@ -40,9 +47,9 @@ class DefinerBot(telepot.helper.ChatHandler):
                 yield from self.sender.sendPhoto(q)
 
     @asyncio.coroutine
-    def create_image(self, msg):
+    def create_image(self, msg, no_to_create=1):
         yield from self.sender.sendMessage("What's the word, hummingbird?")
-        self.listener.set_options(timeout=20)
+        self.listener.set_options(timeout=60)
         response = yield from self.listener.wait()
         word = response['text']
         yield from self.sender.sendMessage("But what does it _mean_?",
@@ -54,5 +61,6 @@ class DefinerBot(telepot.helper.ChatHandler):
         emotion = response['text']
 
         # Create image
-        yield from self.send_random_image(msg, word, definition, emotion)
+        for i in range(no_to_create):
+            yield from self.send_random_image(msg, word, definition, emotion)
                                            

@@ -13,7 +13,7 @@ import config
 logging.basicConfig(level=logging.DEBUG)
 
 bot = telepot.async.DelegatorBot(config.TG_KEY, [
-    (per_chat_id(), create_open(DefinerBot, timeout=10)),
+    (per_chat_id(), create_open(DefinerBot, timeout=60)),
 ])
 
 loop = asyncio.get_event_loop()
