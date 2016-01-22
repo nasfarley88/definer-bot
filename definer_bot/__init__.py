@@ -48,19 +48,33 @@ class DefinerBot(telepot.helper.ChatHandler):
 
     @asyncio.coroutine
     def create_image(self, msg, no_to_create=1):
-        yield from self.sender.sendMessage("What's the word, hummingbird?")
-        self.listener.set_options(timeout=60)
-        response = yield from self.listener.wait()
-        word = response['text']
-        yield from self.sender.sendMessage("But what does it _mean_?",
-                                           parse_mode="Markdown")
-        response = yield from self.listener.wait()
-        definition = response['text']
-        yield from self.sender.sendMessage("What's the emotion behind this word? (single word only)")
-        response = yield from self.listener.wait()
-        emotion = response['text']
+        hide_keyboard = {'hide_keyboard': True}
+        try:
+            yield from self.sender.sendMessage("What's the word, hummingbird?")
+            self.listener.set_options(timeout=60)
+            response = yield from self.listener.wait()
+            word = response['text']
+            yield from self.sender.sendMessage("But what does it _mean_?",
+                                            parse_mode="Markdown")
+            response = yield from self.listener.wait()
+            definition = response['text']
+            show_keyboard = {
+                'keyboard': [
+                    ["happy", "sad"],
+                    ["angry", "destroyed"],
+                ],
+                'one_time_keyboard': True}
 
-        # Create image
-        for i in range(no_to_create):
-            yield from self.send_random_image(msg, word, definition, emotion)
+            yield from self.sender.sendMessage("What's the emotion behind this word?\n(You can also type out your own emotion.)",reply_markup=show_keyboard)
+            response = yield from self.listener.wait()
+            emotion = response['text']
+            yield from self.sender.sendMessage("Let me see what I can find...", reply_markup=hide_keyboard)
+
+            # Create image
+            for i in range(no_to_create):
+                yield from self.send_random_image(msg, word, definition, emotion)
+        except telepot.helper.WaitTooLong as e:
+            yield from self.sender.sendMessage("Why'd you leave me hanging?", reply_markup=hide_keyboard)
+            yield from self.send_random_image(msg, "rejection", "because bots have feelings too", "sad")
+
                                            
